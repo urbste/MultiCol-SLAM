@@ -9,9 +9,9 @@ The novel methods and concepts included in this new version are:
 - MultiKeyframes
 - Generic camera model (Scaramuzza's polynomial model).
 - MultiCol - a generic method for bundle adjustment for multi-camera systems.
+- a hyper graph (g2o) formulation of MultiCol
 - dBRIEF and mdBRIEF a distorted and a online learned, masked version of BRIEF.
 - Multi-camera loop closing
-
 
 
 # 1. Related Publications:
@@ -159,13 +159,17 @@ By now you should have compiled all libraries and MultiCol-SLAM. If everthing we
 
 ## [Lafida](http://www.ipf.kit.edu/lafida.php)
 First download the indoor dynamic dataset: [dataset](http://www2.ipf.kit.edu/~pcv2016/downloads/indoor_dynamic.zip)
-Then extract the folder, e.g. to the folder $HOME$/Downloads/IndoorDynamic
+Then extract the folder, e.g. to the folder 
+
+    $HOME$/Downloads/IndoorDynamic
+    
 The executable **multi\_col\_slam\_lafida** expects 4 paths. 
 The first is the path to the vocabulary file.
 The second is the path to the settings file.
 The third is the path to the calibration files.
 The fourth is the path to the images.
-In our example, we could run MultiCol-SLAM
+In our example, we could run MultiCol-SLAM:
+
     ./Examples/Lafida/multi_col_slam_lafida ./Examples/small_orb_omni_voc_9_6.yml  ./Examples/Lafida/Slam_Settings_indoor1.yaml ./Examples/Lafida/ $HOME$/Downloads/IndoorDynamic
 
 
