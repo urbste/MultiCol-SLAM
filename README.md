@@ -1,8 +1,11 @@
+# !!!!This is an early version of MultiCol-SLAM!!!!
+
 # MultiCol-SLAM
 **Author**: [Steffen Urban](http://www.ipf.kit.edu/english/staff_urban_steffen.php) (urbste at googlemail.com).
 
 MultiCol-SLAM is a multi-fisheye camera SLAM system.
 We adapt the SLAM system proposed in [ORB-SLAM](https://github.com/raulmur/ORB_SLAM) and [ORB-SLAM2](https://github.com/raulmur/ORB_SLAM2) and extend it for the use with fisheye and multi-fisheye camera systems.
+
 
 The novel methods and concepts included in this new version are:
 
@@ -13,12 +16,38 @@ The novel methods and concepts included in this new version are:
 - dBRIEF and mdBRIEF a distorted and a online learned, masked version of BRIEF.
 - Multi-camera loop closing
 
+A **paper** of the proposed SLAM system will follow.
+Here some short descriptions on how the multi-camera integration works. 
+
+The MultiCol model is explained extensively in the paper given below.
+Here we briefly recapitulate the content:
+The MultiCol model is given by:
+<img src="resources/MultiCol.png" width="980">
+the indices are **i** object point, **t** observed at time t, **c** in camera c.
+The camera projection is given by \pi and we chose a general projection function, making this
+model applicable for a varity of prevalent (central) cameras, like perspective, fisheye and omnidirectional.
+
+For a single camera, we could omit the matrix M_t. 
+This yields the classic collinearity equations. 
+This is depicted in the following figure.
+Each observation m' has two indices, i.e. **c** and **i**.
+<img src="resources/singleCamera.png" width="980">
+To handle multi-camera systems, the body frame is introduced, i.e. a frame that describes
+the motion of the multi-camera rig:
+<img src="resources/BodyFrameConcept.png" width="980">
+If we are optimizing the exterior orientation of our multi-camera system, we are actually looking for
+an estimate of matrix M_t.
+Now each observation has three indices.
+
+The graphical representation of MultiCol can be realized in a hyper-graph and g2o can be used to optimize vertices of this graph:
+<img src="resources/MultiCol_as_hypergraph.png" width="980">
+
 
 # 1. Related Publications:
     @Article{UrbanMultiCol2016,
       Title = {{MultiCol Bundle Adjustment: A Generic Method for Pose Estimation, Simultaneous Self-Calibration and Reconstruction for Arbitrary Multi-Camera Systems}},
       Author = {Urban, Steffen and Wursthorn, Sven and Leitloff, Jens and Hinz, Stefan},
-      Journal = IJCV,
+      Journal = International Journal of Computer Vision,
       Year = {2016},
       Pages = {1--19}
      }
@@ -29,7 +58,6 @@ The novel methods and concepts included in this new version are:
       Year = {2015},
       Pages = {72--79},
       Volume = {108},
-      Owner = {Steffen},
       Publisher = {Elsevier},
     }
 

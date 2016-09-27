@@ -1,0 +1,35 @@
+%YAML:1.0
+
+# Camera Parameters. Adjust them!
+# Camera calibration parameters cam right
+Camera.Iw: 754
+Camera.Ih: 480
+
+Camera.nrpol: 5
+Camera.nrinvpol: 12
+
+Camera.a0:-209.071570423477
+Camera.a1: 0.0 
+Camera.a2: 0.00216428966944475
+Camera.a3: -4.82076123755912e-06
+Camera.a4: 1.91902225328321e-08
+
+Camera.pol0: 294.569975726124
+Camera.pol1: 148.608451179358
+Camera.pol2: -12.8584962393538
+Camera.pol3:  28.8889327437629
+Camera.pol4: 6.33883105861485
+Camera.pol5:-0.89043629163529
+Camera.pol6: 12.3786448516946
+Camera.pol7: 0.165754338732521
+Camera.pol8: -7.71927140996498
+Camera.pol9: 0.995360127219927
+Camera.pol10: 3.74959014924028
+Camera.pol11: 1.01240838118284   
+ 
+Camera.c: 1.00025900216253
+Camera.d: -0.0123492665428806
+Camera.e: 0.012594227848688
+    
+Camera.u0: 378.722262294544
+Camera.v0: 253.62515782861

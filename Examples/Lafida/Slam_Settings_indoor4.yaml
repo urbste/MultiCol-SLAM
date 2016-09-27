@@ -1,0 +1,71 @@
+%YAML:1.0
+# Camera frames per second 
+Camera.fps: 25.0
+
+# Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
+Camera.RGB: 1
+
+#--------------------------------------------------------------------------------------------
+### Changing the parameters below could seriously degradate the performance of the system
+
+# 0-> ORB, 1->dBRIEF
+extractor.usemdBRIEF: 0
+                      
+# 1-> learn masks, 0 don't (mdBRIEF)
+extractor.masks: 0
+
+# 1-> use Agast, 0 don't
+extractor.useAgast: 0
+
+# 0,1,2,(3 is only possible for agast)
+extractor.fastAgastType: 2
+
+# Extractor: 32 -> ORB , (16/32/64) -> dBRIEF and mdBRIEF
+extractor.descSize: 32
+
+# Extractor: Number of features per image
+extractor.nFeatures: 500
+
+# Extractor: Scale factor between levels in the scale pyramid 	
+extractor.scaleFactor: 1.2
+
+# Extractor: Number of levels in the scale pyramid	
+extractor.nLevels: 8
+
+# Extractor: FAST threshold (lower less restrictive)			
+extractor.fastTh: 20
+
+# Extractor: Score to sort features. 0 -> Harris Score, 1 -> FAST Score			
+extractor.nScoreType: 0
+
+# Constant Velocity Motion Model (0 - disabled, 1 - enabled [recommended])
+UseMotionModel: 1
+
+
+
+#--------------------------------------------------------------------------------------------
+# current trajectory to get evaluated
+traj2Eval: 4
+# run x (we need multiple runs to evaluate the accuracy because SLAM is not deterministic)
+trajrun: 1
+
+### trajectory options
+#------------------------------
+### initial frame Traj 1
+traj.StartFrame: 1
+traj.EndFrame: 1629
+#------------------------------
+
+#--------------------------------------------------------------------------------------------
+# Viewer settings
+Viewer.MultiKeyFrameSize: 0.08
+Viewer.MultiKeyFrameLineWidth: 2
+Viewer.GraphLineWidth: 1
+Viewer.PointSize: 3
+Viewer.CameraSize: 0.1
+Viewer.CameraLineWidth: 3
+Viewer.ViewpointX: 0
+Viewer.ViewpointY: -10
+Viewer.ViewpointZ: -10
+Viewer.ViewpointF: 2000
+Viewer.DrawNrCams: 2

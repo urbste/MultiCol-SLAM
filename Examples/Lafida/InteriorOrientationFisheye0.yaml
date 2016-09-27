@@ -1,0 +1,44 @@
+%YAML:1.0
+
+# Camera Parameters. Adjust them!
+# Camera calibration parameters camera back
+Camera.Iw: 754
+Camera.Ih: 480
+
+# hyperparameters
+Camera.nrpol: 5
+Camera.nrinvpol: 12
+
+# forward polynomial f(\rho)
+Camera.a0: -209.200757992065
+Camera.a1: 0.0 
+Camera.a2: 0.00213741670953883
+Camera.a3: -4.2203617319086e-06
+Camera.a4: 1.77146086919594e-08
+
+# backward polynomial rho(\theta)
+Camera.pol0: 293.667187375663
+Camera.pol1: 149.982043337335
+Camera.pol2: -10.448650568161
+Camera.pol3: 28.2295300683376
+Camera.pol4: 7.13365723186292
+Camera.pol5: 0.056303218962532
+Camera.pol6: 10.4144677485333
+Camera.pol7: 0.166354960773665
+Camera.pol8: -5.86858687381081
+Camera.pol9: 1.18165998645705
+Camera.pol10: 3.1108311354746
+Camera.pol11: 0.810799620714366
+
+# affine matrix
+Camera.c: 0.999626131079017
+Camera.d: -0.0034775192597376
+Camera.e: 0.00385134991673147
+
+# principal point
+Camera.u0: 392.219508388648
+Camera.v0: 243.494438476351
+
+
+    
+
