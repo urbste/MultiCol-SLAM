@@ -22,7 +22,7 @@ Here some short descriptions on how the multi-camera integration works.
 The MultiCol model is explained extensively in the paper given below.
 Here we briefly recapitulate the content:
 The MultiCol model is given by:
-<img src="resources/MultiCol.png" width="980">
+<img src="resources/MultiCol.png" width="500">
 the indices are **i** object point, **t** observed at time t, **c** in camera c.
 The camera projection is given by \pi and we chose a general projection function, making this
 model applicable for a varity of prevalent (central) cameras, like perspective, fisheye and omnidirectional.
@@ -31,10 +31,10 @@ For a single camera, we could omit the matrix M_t.
 This yields the classic collinearity equations. 
 This is depicted in the following figure.
 Each observation m' has two indices, i.e. **c** and **i**.
-<img src="resources/singleCamera.png" width="980">
+<img src="resources/singleCamera.png" width="500">
 To handle multi-camera systems, the body frame is introduced, i.e. a frame that describes
 the motion of the multi-camera rig:
-<img src="resources/BodyFrameConcept.png" width="980">
+<img src="resources/BodyFrameConcept.png" width="500">
 If we are optimizing the exterior orientation of our multi-camera system, we are actually looking for
 an estimate of matrix M_t.
 Now each observation has three indices.
