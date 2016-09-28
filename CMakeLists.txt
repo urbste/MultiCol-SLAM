@@ -22,6 +22,12 @@ IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Release)
 ENDIF()
 
+if (WIN32)
+SET (MCSSLAM_LIB_TYPE STATIC)
+else()
+SET (MCSSLAM_LIB_TYPE SHARED)
+endif(WIN32)
+
 MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
 
 IF(WIN32)
@@ -40,24 +46,24 @@ find_package(Pangolin REQUIRED)
 # ==============================================================================
 # Search OpenGV
 # ============================================================================== 
-FIND_PACKAGE(OpenGV QUIET HINTS ${OpenGV_DIR_HINTS})
-IF(NOT OpenGV_FOUND)
-  SET(OpenGV_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/ThirdParty/OpenGV/include)
-  SET(OpenGV_LIBRARIES opengv)
-  MESSAGE("OpenGV include DIR ${OpenGV_INCLUDE_DIR}")
-  INCLUDE_DIRECTORIES(${OpenGV_INCLUDE_DIR})
-ENDIF()
+#FIND_PACKAGE(OpenGV QUIET HINTS ${OpenGV_DIR_HINTS})
+#IF(NOT OpenGV_FOUND)
+SET(OpenGV_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/ThirdParty/OpenGV/include)
+SET(OpenGV_LIBRARIES opengv)
+MESSAGE("OpenGV include DIR ${OpenGV_INCLUDE_DIR}")
+INCLUDE_DIRECTORIES(${OpenGV_INCLUDE_DIR})
+#ENDIF()
 
 # ==============================================================================
 # Search g2o includes
 # ============================================================================== 
-FIND_PACKAGE(g2o QUIET HINTS ${g2o_DIR_HINTS})
-IF(NOT g2o_FOUND)
-  SET(g2o_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/ThirdParty/g2o)
-  SET(g2o_LIBRARIES g2o)
-  MESSAGE("g2o include DIR ${g2o_INCLUDE_DIR}")
-  INCLUDE_DIRECTORIES(${g2o_INCLUDE_DIR})
-ENDIF()
+#FIND_PACKAGE(g2o QUIET HINTS ${g2o_DIR_HINTS})
+#IF(NOT g2o_FOUND)
+SET(g2o_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/ThirdParty/g2o)
+SET(g2o_LIBRARIES g2o)
+MESSAGE("g2o include DIR ${g2o_INCLUDE_DIR}")
+INCLUDE_DIRECTORIES(${g2o_INCLUDE_DIR})
+#ENDIF()
 
 # ==============================================================================
 # Search Eigen, borrowed from openMVG
@@ -118,7 +124,7 @@ ${Pangolin_INCLUDE_DIRS}
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
-add_library(${PROJECT_NAME} SHARED
+add_library(${PROJECT_NAME} ${MCSSLAM_LIB_TYPE}
 src/cam_model_omni.cpp
 src/cam_system_omni.cpp
 src/cConverter.cpp
@@ -151,13 +157,13 @@ ${MultiColHeaders}
 IF(WIN32)
 SET (G2OLIBS_DEBUG ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/bin/Debug/g2o.lib)
 SET (DBOW2LIBS_DEBUG  ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/Debug/DBoW2.lib)
-SET (OPENGVLIBS_DEBUG  ${PROJECT_SOURCE_DIR}/ThirdParty/OpenGV/lib/Debug/opengv.lib) 
-SET (RANDOMGENLIBS_DEBUG ${PROJECT_SOURCE_DIR}/ThirdParty/OpenGV/lib/Debug/random_generators.lib)
+SET (OPENGVLIBS_DEBUG  ${PROJECT_SOURCE_DIR}/ThirdParty/OpenGV/build/lib/Debug/opengv.lib) 
+SET (RANDOMGENLIBS_DEBUG ${PROJECT_SOURCE_DIR}/ThirdParty/OpenGV/build/lib/Debug/random_generators.lib)
     
 SET (G2OLIBS ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/bin/Release/g2o.lib)
 SET (DBOW2LIBS ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/Release/DBoW2.lib)
-SET (OPENGVLIBS ${PROJECT_SOURCE_DIR}/ThirdParty/OpenGV/lib/Release/opengv.lib) 
-SET (RANDOMGENLIBS ${PROJECT_SOURCE_DIR}/ThirdParty/OpenGV/lib/Release/random_generators.lib)
+SET (OPENGVLIBS ${PROJECT_SOURCE_DIR}/ThirdParty/OpenGV/build/lib/Release/opengv.lib) 
+SET (RANDOMGENLIBS ${PROJECT_SOURCE_DIR}/ThirdParty/OpenGV/build/lib/Release/random_generators.lib)
 ELSE()
 SET (G2OLIBS ${PROJECT_SOURCE_DIR}/ThirdParty/g2o/lib/libg2o.so)
 SET (DBOW2LIBS ${PROJECT_SOURCE_DIR}/ThirdParty/DBoW2/lib/libDBoW2.so)
