@@ -12,8 +12,11 @@ IF(NOT CMAKE_BUILD_TYPE)
 ENDIF()
 
 MESSAGE(STATUS "BUILD TYPE:" ${CMAKE_BUILD_TYPE})
-
+IF(WIN32)
+SET (G2O_LIB_TYPE STATIC)
+ELSE()
 SET (G2O_LIB_TYPE SHARED)
+ENDIF(WIN32)
 
 # There seems to be an issue with MSVC8
 # see http://eigen.tuxfamily.org/bz/show_bug.cgi?id=83
