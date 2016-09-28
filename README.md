@@ -25,13 +25,13 @@ Here we briefly recapitulate the content:
 The MultiCol model is given by:
 <img src="resources/MultiCol.png" width="500">
 
-the indices are **i** object point, **t** observed at time t, **c** in camera c.
+the indices are object point **i**, observed at time **t**, in camera **c**.
 The camera projection is given by \pi and we chose a general projection function, making this
-model applicable for a varity of prevalent (central) cameras, like perspective, fisheye and omnidirectional.
+model applicable to a varity of prevalent (central) cameras, like perspective, fisheye and omnidirectional.
 
 For a single camera, we could omit the matrix M_t. 
 This yields the classic collinearity equations. 
-This is depicted in the following figure.
+Latter is depicted in the following figure.
 Each observation m' has two indices, i.e. **t** and **i**.
 <img src="resources/singleCamera.png" width="500">
 
