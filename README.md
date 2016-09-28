@@ -217,7 +217,7 @@ Finally, we can build MultiCol-SLAM:
 - If you get any errors:
 - Set OpenCV_DIR: $PATH_TO_OpenCV$/build/install
 - Set Pangolin_DIR: $PATH_TO_PANGOLIN$/build/src
-- Open $MultiCol-SLAM_PATH$/build/MultiCol-SLAM and build the solution (ALL_BUILD)
+- Open $MultiCol-SLAM_PATH$/build/MultiCol-SLAM.sln and build the solution (ALL_BUILD)
 
 # 7. Run examples
 
