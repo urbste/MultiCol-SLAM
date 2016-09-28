@@ -179,11 +179,45 @@ for the rest run the build.sh
 This will create a library and an executable **multi\_col\_slam\_lafida**, that you can run as shown in 7. below.
 
 ## Windows:
+This description assumes that you are familiar with building libraries using cmake and Visual Studio.
 Required is at least Visual Studio 2013.
+The first step is to build **Pangolin**.
+- Download or clone [Pangolin](https://github.com/stevenlovegrove/Pangolin).
+- Run cmake to create a VS project in $PATH_TO_PANGOLIN$/build.
+- You can add options if you like, but the most basic set of options is sufficient for MultiCol-SLAM
+and should build without issues.
+- Open build/Pangolin.sln switch to Release and build the solution (ALL_BUILD)
 
-The first step is to build Pangolin
+Next build **OpenCV 3.1**.
+- Download or clone [OpenCV 3.1](https://github.com/opencv/opencv).
+- Run cmake to create a VS project in $PATH_TO_OpenCV$/build.
+- You might want to switch of building the CUDA libraries as this takes a long time
+- Open $PATH_TO_OpenCV$/build/OpenCV.sln switch to Release and build the solution. Open folder CMakeTargets.
+Right click on INSTALL and select build.
 
-Then you have to build the third party libraries g2o,DBoW2, OpenGV
+Now download or clone MultiCol-SLAM.
+Next build DBoW2:
+- Run cmake to create a VS project in $MultiCol-SLAM_PATH$/ThirdParty/DBoW2/build
+- If you get configuration errors, you likely did not set the OpenCV_DIR
+- Set this path to $PATH_TO_OpenCV$/build/install and run Generate
+- $MultiCol-SLAM_PATH$/ThirdParty/DBoW2/build/DBoW2.sln, switch to Release and build the solution
+
+Next build g2o: 
+- Run cmake to create a VS project in $MultiCol-SLAM_PATH$/ThirdParty/g2o/build
+- If you get any errors, you might want to set the EIGEN3_INCLUDE_DIR. Either you set it to your own version of Eigen or use the version that is provided in the ThirdParty folder $MultiCol-SLAM_PATH$/ThirdParty/Eigen.
+- Hit Generate and you will get the solution g2o.sln. Open it, select Release and build the solution.
+
+In a last step, we will build OpenGV.
+Unfortunately this takes quite some time under Windows (hours).
+- Run cmake to create a VS project in $MultiCol-SLAM_PATH$/ThirdParty/OpenGV/build
+- Open $MultiCol-SLAM_PATH$/ThirdParty/OpenGV/build/OpenGV.sln switch to Release and build the solution
+
+Finally, we can build MultiCol-SLAM:
+- Run cmake to create a VS project in $MultiCol-SLAM_PATH$/build
+- If you get any errors:
+- Set OpenCV_DIR: $PATH_TO_OpenCV$/build/install
+- Set Pangolin_DIR: $PATH_TO_PANGOLIN$/build/src
+- Open $MultiCol-SLAM_PATH$/build/MultiCol-SLAM and build the solution (ALL_BUILD)
 
 # 7. Run examples
 
