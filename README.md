@@ -16,6 +16,12 @@ The novel methods and concepts included in this new version are:
 - a hyper graph (g2o) formulation of MultiCol
 - dBRIEF and mdBRIEF a distorted and a online learned, masked version of BRIEF.
 - Multi-camera loop closing
+- minimal (non)-central absolute pose estimation (3 pts) instead of EPnP which is non-minimal (6 pts)
+
+In terms of performance the following things were modified:
+- exchanged all tranformations and vectors from cv::Mat to cv::Matx and cv::Vec
+- changed matrix access (descriptors, images) from .at to .ptr()
+- set terminate criteria for bundle adjustment and pose estimation using g2o::SparseOptimizerTerminateAction
 
 A **paper** of the proposed SLAM system will follow.
 Here some short descriptions on how the multi-camera integration works. 

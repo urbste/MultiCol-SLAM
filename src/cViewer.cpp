@@ -84,7 +84,7 @@ namespace MultiColSLAM
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		pangolin::CreatePanel("menu").SetBounds(0.0, 1.0, 0.0, pangolin::Attach::Pix(175));
-		pangolin::Var<bool> menuFollowCamera("menu.Follow Camera", true, true);
+		pangolin::Var<bool> menuFollowCamera("menu.Follow Camera", false, true);
 		pangolin::Var<bool> menuShowPoints("menu.Show Points", true, true);
 		pangolin::Var<bool> menuShowKeyFrames("menu.Show KeyFrames", false, true);
 		pangolin::Var<bool> menuShowGraph("menu.Show Graph", true, true);
