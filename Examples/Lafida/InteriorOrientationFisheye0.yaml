@@ -39,6 +39,7 @@ Camera.e: 0.00385134991673147
 Camera.u0: 392.219508388648
 Camera.v0: 243.494438476351
 
-
+# create a mirror mask for fisheye cameras
+Camera.mirrorMask: 1
     
 

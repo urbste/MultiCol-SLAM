@@ -162,9 +162,13 @@ namespace MultiColSLAM
 
 			cCamModelGeneral_ camModel = cCamModelGeneral_(cdeu0v0, poly, invpoly, Iw, Ih);
 			vector<cv::Mat> mirrorMasks;
-			CreateMirrorMask(camModel,
-				4,
-				mirrorMasks);
+
+			int createMirrorMasks = (int)fSettings["Camera.mirrorMask"];
+			if (createMirrorMasks == 1)
+				CreateMirrorMask(camModel, 4, mirrorMasks);
+			else
+				mirrorMasks.push_back(cv::Mat::ones(cv::Size(Iw, Ih), CV_8UC1));			camModel.SetMirrorMasks(mirrorMasks);
+
 			camModel.SetMirrorMasks(mirrorMasks);
 			camModels[c] = camModel;
 
