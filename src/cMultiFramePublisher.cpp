@@ -151,12 +151,8 @@ namespace MultiColSLAM
 							pt2.y = vCurrentKeys[i].pt.y + r;
 							if (!mvbOutliers[i])
 							{
-								int ptIdx = vMatchedMapPoints[i]->mnId;
-
 								cv::rectangle(ims[camIdx], pt1, pt2, cv::Scalar(255, 0, 0));
-
 								cv::circle(ims[camIdx], vCurrentKeys[i].pt, 2, cv::Scalar(0, 255, 0), -1);
-								//cv::putText(ims[camIdx], to_string(ptIdx), pt1 + cv::Point2f(2, 2), 1, 0.75, cv::Scalar(0, 0, 255));
 								++mnTracked;
 							}
 						}
