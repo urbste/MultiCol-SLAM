@@ -46,7 +46,6 @@ namespace MultiColSLAM
 {
 #define FRAME_GRID_ROWS 48
 #define FRAME_GRID_COLS 64
-#define NR_CAMS 3
 
 	class cTracking;
 	class cMapPoint;
@@ -68,8 +67,6 @@ namespace MultiColSLAM
 			int imgCnt);
 
 		ORBVocabulary* mpORBvocabulary;
-
-		mdBRIEFextractorOct* mp_mdBRIEF_extractor;
 
 		std::vector<mdBRIEFextractorOct*> mp_mdBRIEF_extractorOct;
 
