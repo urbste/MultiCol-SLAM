@@ -984,10 +984,10 @@ int cORBmatcher::SearchForTriangulationRaw(cMultiKeyFrame *pKF1,
 
 	// precompute essential matrices
 	int nrCams = pKF1->camSystem.GetNrCams();
-	vector<vector<cv::Matx33d>> Es(3);
+	vector<vector<cv::Matx33d>> Es(nrCams);
 	for (int i = 0; i < nrCams; ++i)
 	{
-		vector<cv::Matx33d> tmp(3);
+		vector<cv::Matx33d> tmp(nrCams);
 		for (int j = 0; j < nrCams; ++j)
 		{
 			cv::Matx44d Mcs1 = pKF1->camSystem.Get_MtMc_inv(i);
