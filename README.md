@@ -6,10 +6,10 @@
 MultiCol-SLAM is a multi-fisheye camera SLAM system.
 We adapt the SLAM system proposed in [ORB-SLAM](https://github.com/raulmur/ORB_SLAM) and [ORB-SLAM2](https://github.com/raulmur/ORB_SLAM2) and extend it for the use with fisheye and multi-fisheye camera systems.
 
-# News 
-- added paper: [Paper](https://arxiv.org/abs/1610.07336)
-
+### News 
+- 25/10/2016 added paper: [Paper](https://arxiv.org/abs/1610.07336)
 - See a video here: [VIDEO](https://youtu.be/ggZqsiePUq8)
+
 
 The novel methods and concepts included in this new version are:
 
