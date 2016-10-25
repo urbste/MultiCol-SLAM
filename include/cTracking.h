@@ -109,7 +109,6 @@ namespace MultiColSLAM
 		std::vector<cv::Vec3d> mvIniP3D;
 		cMultiFrame mInitialFrame;
 
-
 		void CheckResetByPublishers();
 
 		std::vector<cv::Matx61d> GetAllPoses() { return this->allPoses; }
@@ -135,8 +134,6 @@ namespace MultiColSLAM
 		bool grab;
 		int numberCameras;
 
-		bool rendererSet;
-		bool initModelBased;
 		cv::Matx44d initPose;
 		double curBaseline2MKF;
 		bool Track();

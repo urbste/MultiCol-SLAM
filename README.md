@@ -6,7 +6,10 @@
 MultiCol-SLAM is a multi-fisheye camera SLAM system.
 We adapt the SLAM system proposed in [ORB-SLAM](https://github.com/raulmur/ORB_SLAM) and [ORB-SLAM2](https://github.com/raulmur/ORB_SLAM2) and extend it for the use with fisheye and multi-fisheye camera systems.
 
-See a video here: [VIDEO](https://youtu.be/ggZqsiePUq8)
+# News 
+- added paper: [Paper](https://arxiv.org/abs/1610.07336)
+
+- See a video here: [VIDEO](https://youtu.be/ggZqsiePUq8)
 
 The novel methods and concepts included in this new version are:
 
@@ -54,6 +57,12 @@ The graphical representation of MultiCol can be realized in a hyper-graph and g2
 
 
 # 1. Related Publications:
+    @Article{UrbanMultiColSLAM16,
+      Title={{MultiCol-SLAM} - A Modular Real-Time Multi-Camera SLAM System},
+      Author={Urban, Steffen and Hinz, Stefan},
+      Journal={arXiv preprint arXiv:1610.07336},
+      Year={2016}
+    }
     @Article{UrbanMultiCol2016,
       Title = {{MultiCol Bundle Adjustment: A Generic Method for Pose Estimation, Simultaneous Self-Calibration and Reconstruction for Arbitrary Multi-Camera Systems}},
       Author = {Urban, Steffen and Wursthorn, Sven and Leitloff, Jens and Hinz, Stefan},

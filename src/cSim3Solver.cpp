@@ -88,7 +88,8 @@ namespace MultiColSLAM
 				// only if the point was visible in multiple cameras (better scale?)
 				//if (!(idxs1.size() > 1 || idxs2.size() > 1))
 				//	continue;
-
+				if (idxs1.empty() || idxs2.empty())
+					continue;
 				// TODO
 				int indexKF1 = idxs1[0]; // naja can be more than 1
 				int indexKF2 = idxs2[0]; // naja can be more than 1

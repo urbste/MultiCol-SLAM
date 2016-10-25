@@ -101,9 +101,8 @@ namespace MultiColSLAM
 
 					// Check redundant local Keyframes
 					KeyFrameCulling();
-
-					mpLoopCloser->InsertKeyFrame(mpCurrentMultiKeyFrame);
 				}
+				mpLoopCloser->InsertKeyFrame(mpCurrentMultiKeyFrame);
 			}
 			// Safe area to stop
 			else if (Stop())

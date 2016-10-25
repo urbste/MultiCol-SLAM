@@ -75,8 +75,6 @@ cTracking::cTracking(
 	curBaseline2MKF(0.0),
 	finished(false),
 	grab(true),
-	rendererSet(false),
-	initModelBased(false),
 	loopAndMapperSet(false)
 {
 
@@ -89,7 +87,7 @@ cTracking::cTracking(
 	cv::FileStorage slamSettings(settingsPath, cv::FileStorage::READ);
 	double fps = slamSettings["Camera.fps"];
     if (fps==0)
-        fps=30;
+        fps = 25;
 
     // Max/Min Frames to insert keyframes and to check relocalisation
 	mMinFrames = cvRound(fps / 3);
@@ -379,6 +377,7 @@ void cTracking::FirstInitialization()
     //We ensure a minimum ORB features to continue, otherwise discard frame
     if (mCurrentFrame.mvKeys.size() > 100)
     {
+		fill(mvIniMatches.begin(), mvIniMatches.end(), -1);
 		mInitialFrame = cMultiFrame(mCurrentFrame);
 		mLastFrame = cMultiFrame(mCurrentFrame);
         mvbPrevMatched.resize(mCurrentFrame.mvKeys.size());
@@ -394,7 +393,8 @@ void cTracking::FirstInitialization()
 void cTracking::Initialize()
 {
     // Check if current frame has enough keypoints, otherwise reset initialization process
-    if (mCurrentFrame.mvKeys.size() <= 100)
+
+	if (mCurrentFrame.mvKeys.size() <= 100)
     {
         fill(mvIniMatches.begin(),mvIniMatches.end(),-1);
         mState = NOT_INITIALIZED;
@@ -436,6 +436,67 @@ void cTracking::Initialize()
 
 }
 
+void cTracking::CreateInitialMapStereo()
+{
+	mInitialFrame.SetPose(cv::Matx44d::eye());
+	// Create KeyFrames
+	cMultiKeyFrame* pKFini = new cMultiKeyFrame(mInitialFrame, mpMap, mpKeyFrameDB);
+	pKFini->imageId = mInitialFrame.GetImgCnt();
+
+	pKFini->ComputeBoW();
+	mpMap->AddKeyFrame(pKFini);
+
+	// Create MapPoints and asscoiate to keyframes
+	for (size_t i = 0; i < matchedPairsStereo.size(); ++i)
+	{
+		if (mvIniMatches[i] < 0)
+			continue;
+
+		//Create MapPoint.
+		cv::Vec3d worldPos(mvIniP3D[i]);
+
+		cMapPoint* pMP = new cMapPoint(worldPos, pKFcur, mpMap);
+		// assign mappoint to keyframes
+		pKFini->AddMapPoint(pMP, i);
+		// add observation to mappoints
+		pMP->AddObservation(pKFini, matchedPairsStereo[i].first);
+		pMP->AddObservation(pKFini, matchedPairsStereo[i].second);
+		// compute some statistics about the mappoint
+		pMP->ComputeDistinctiveDescriptors(pKFini->HavingMasks());
+		cv::Mat desc = pMP->GetDescriptor();
+		pMP->UpdateCurrentDescriptor(desc);
+		pMP->UpdateNormalAndDepth();
+
+		//Fill Current Frame structure
+		mCurrentFrame.mvpMapPoints[matchedPairsStereo[i].first] = pMP;
+		mCurrentFrame.mvpMapPoints[matchedPairsStereo[i].second] = pMP;
+		//Add to Map
+		mpMap->AddMapPoint(pMP);
+
+	}
+	pKFini->UpdateConnections();
+	mpLocalMapper->InsertMultiKeyFrame(pKFini);
+
+	cv::Matx44d iniPose = pKFini->GetPose();
+	mInitialFrame.SetPose(iniPose);
+	cv::Matx44d curPose = pKFini->GetPose();
+	mCurrentFrame.SetPose(curPose);
+
+	mLastFrame = cMultiFrame(mCurrentFrame);
+	mnLastKeyFrameId = mCurrentFrame.mnId;
+	mpLastKeyFrame = pKFini;
+
+	// add local keyframes for the tracker
+	mvpLocalKeyFrames.push_back(pKFini);
+	mvpLocalMapPoints = mpMap->GetAllMapPoints();
+	mpReferenceKF = pKFini;
+
+	mpMap->SetReferenceMapPoints(mvpLocalMapPoints);
+
+	mpMapPublisher->SetCurrentCameraPose(pKFini->GetPose());
+
+	mState = WORKING;
+}
 
 void cTracking::CreateInitialMap(cv::Matx33d &Rcw, cv::Vec3d &tcw, int leadingCam)
 {
@@ -470,7 +531,6 @@ void cTracking::CreateInitialMap(cv::Matx33d &Rcw, cv::Vec3d &tcw, int leadingCa
 
         //Create MapPoint.
         cv::Vec3d worldPos(mvIniP3D[i]);
-		//cv::Vec3d rotWorldPos = pKFcur->GetRotation()*worldPos + pKFcur->GetTranslation();
 
         cMapPoint* pMP = new cMapPoint(worldPos,pKFcur,mpMap);
 		// assign mappoint to keyframes
@@ -537,15 +597,13 @@ void cTracking::CreateInitialMap(cv::Matx33d &Rcw, cv::Vec3d &tcw, int leadingCa
 			if (!vpAllMapPoints1[iMP])
 				continue;
 
-			cv::Vec2d uv, impt2;
+			cv::Vec2d uv;
 			cv::Vec3d wp = pMP->GetWorldPos();
 			cv::Vec4d wp4 = cConverter::toVec4d(wp);
 			pKFini->camSystem.WorldToCamHom_fast(c, wp4, uv);
 			// test if the point even projects into the mirror mask
 			if (!pKFini->camSystem.GetCamModelObj(c).isPointInMirrorMask(uv(0), uv(1), 0))
 				continue;
-
-			pKFini->camSystem.WorldToCamHom_fast(leadingCam, wp4, impt2);
 
 			// if yes, then get all the features in that area
 			vector<size_t> vIndices =
@@ -679,7 +737,6 @@ void cTracking::CreateInitialMap(cv::Matx33d &Rcw, cv::Vec3d &tcw, int leadingCa
 					}
 					cv::KeyPoint ptMatch2 = pKFcur->GetKeyPoint(bestIdx2);
 
-					//cv::circle(im2Tmp, ptMatch2.pt, 3, cv::Scalar(0.0, 0.0, 250.0));
 					cv::Vec3d Xl1 = pKFcur->GetKeyPointRay(iMP);
 					cv::Vec3d Xl2 = pKFcur->GetKeyPointRay(bestIdx2);
 					bool epiDist = CheckDistEpipolarLine(Xl1, Xl2, E12, 1e-2);
