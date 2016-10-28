@@ -436,68 +436,6 @@ void cTracking::Initialize()
 
 }
 
-void cTracking::CreateInitialMapStereo()
-{
-	mInitialFrame.SetPose(cv::Matx44d::eye());
-	// Create KeyFrames
-	cMultiKeyFrame* pKFini = new cMultiKeyFrame(mInitialFrame, mpMap, mpKeyFrameDB);
-	pKFini->imageId = mInitialFrame.GetImgCnt();
-
-	pKFini->ComputeBoW();
-	mpMap->AddKeyFrame(pKFini);
-
-	// Create MapPoints and asscoiate to keyframes
-	for (size_t i = 0; i < matchedPairsStereo.size(); ++i)
-	{
-		if (mvIniMatches[i] < 0)
-			continue;
-
-		//Create MapPoint.
-		cv::Vec3d worldPos(mvIniP3D[i]);
-
-		cMapPoint* pMP = new cMapPoint(worldPos, pKFcur, mpMap);
-		// assign mappoint to keyframes
-		pKFini->AddMapPoint(pMP, i);
-		// add observation to mappoints
-		pMP->AddObservation(pKFini, matchedPairsStereo[i].first);
-		pMP->AddObservation(pKFini, matchedPairsStereo[i].second);
-		// compute some statistics about the mappoint
-		pMP->ComputeDistinctiveDescriptors(pKFini->HavingMasks());
-		cv::Mat desc = pMP->GetDescriptor();
-		pMP->UpdateCurrentDescriptor(desc);
-		pMP->UpdateNormalAndDepth();
-
-		//Fill Current Frame structure
-		mCurrentFrame.mvpMapPoints[matchedPairsStereo[i].first] = pMP;
-		mCurrentFrame.mvpMapPoints[matchedPairsStereo[i].second] = pMP;
-		//Add to Map
-		mpMap->AddMapPoint(pMP);
-
-	}
-	pKFini->UpdateConnections();
-	mpLocalMapper->InsertMultiKeyFrame(pKFini);
-
-	cv::Matx44d iniPose = pKFini->GetPose();
-	mInitialFrame.SetPose(iniPose);
-	cv::Matx44d curPose = pKFini->GetPose();
-	mCurrentFrame.SetPose(curPose);
-
-	mLastFrame = cMultiFrame(mCurrentFrame);
-	mnLastKeyFrameId = mCurrentFrame.mnId;
-	mpLastKeyFrame = pKFini;
-
-	// add local keyframes for the tracker
-	mvpLocalKeyFrames.push_back(pKFini);
-	mvpLocalMapPoints = mpMap->GetAllMapPoints();
-	mpReferenceKF = pKFini;
-
-	mpMap->SetReferenceMapPoints(mvpLocalMapPoints);
-
-	mpMapPublisher->SetCurrentCameraPose(pKFini->GetPose());
-
-	mState = WORKING;
-}
-
 void cTracking::CreateInitialMap(cv::Matx33d &Rcw, cv::Vec3d &tcw, int leadingCam)
 {
 	// Set Frame Poses

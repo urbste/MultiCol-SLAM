@@ -24,7 +24,7 @@ extractor.fastAgastType: 2
 extractor.descSize: 32
 
 # Extractor: Number of features per image
-extractor.nFeatures: 1000
+extractor.nFeatures: 400
 
 # Extractor: Scale factor between levels in the scale pyramid 	
 extractor.scaleFactor: 1.2
