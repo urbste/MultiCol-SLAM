@@ -65,6 +65,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include <vector>
+#include <iterator>
 
 #include "mdBRIEFextractorOct.h"
 
