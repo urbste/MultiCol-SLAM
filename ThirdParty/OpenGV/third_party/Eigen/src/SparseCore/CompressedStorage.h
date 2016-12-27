@@ -51,8 +51,8 @@ class CompressedStorage
     CompressedStorage& operator=(const CompressedStorage& other)
     {
       resize(other.size());
-      memcpy(m_values, other.m_values, m_size * sizeof(Scalar));
-      memcpy(m_indices, other.m_indices, m_size * sizeof(Index));
+      internal::smart_copy(other.m_values,  other.m_values  + m_size, m_values);
+      internal::smart_copy(other.m_indices, other.m_indices + m_size, m_indices);
       return *this;
     }
 
@@ -83,10 +83,10 @@ class CompressedStorage
         reallocate(m_size);
     }
 
-    void resize(size_t size, float reserveSizeFactor = 0)
+    void resize(size_t size, double reserveSizeFactor = 0)
     {
       if (m_allocatedSize<size)
-        reallocate(size + size_t(reserveSizeFactor*size));
+        reallocate(size + size_t(reserveSizeFactor*double(size)));
       m_size = size;
     }
 
@@ -101,6 +101,11 @@ class CompressedStorage
     inline size_t size() const { return m_size; }
     inline size_t allocatedSize() const { return m_allocatedSize; }
     inline void clear() { m_size = 0; }
+
+    const Scalar* valuePtr() const { return m_values; }
+    Scalar* valuePtr() { return m_values; }
+    const Index* indexPtr() const { return m_indices; }
+    Index* indexPtr() { return m_indices; }
 
     inline Scalar& value(size_t i) { return m_values[i]; }
     inline const Scalar& value(size_t i) const { return m_values[i]; }
@@ -208,8 +213,10 @@ class CompressedStorage
       Index* newIndices = new Index[size];
       size_t copySize = (std::min)(size, m_size);
       // copy
-      internal::smart_copy(m_values, m_values+copySize, newValues);
-      internal::smart_copy(m_indices, m_indices+copySize, newIndices);
+      if (copySize>0) {
+        internal::smart_copy(m_values, m_values+copySize, newValues);
+        internal::smart_copy(m_indices, m_indices+copySize, newIndices);
+      }
       // delete old stuff
       delete[] m_values;
       delete[] m_indices;

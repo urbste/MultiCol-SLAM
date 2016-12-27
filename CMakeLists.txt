@@ -23,7 +23,7 @@ IF(NOT CMAKE_BUILD_TYPE)
 ENDIF()
 
 if (WIN32)
-SET (MCSSLAM_LIB_TYPE STATIC)
+SET (MCSSLAM_LIB_TYPE )
 else()
 SET (MCSSLAM_LIB_TYPE SHARED)
 endif(WIN32)
@@ -31,8 +31,8 @@ endif(WIN32)
 MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
 
 IF(WIN32)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -openmp -W0 -MP -MTd ")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -openmp -W0 -MP -MTd")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -openmp -W0 -MP")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -openmp -W0 -MP")
 ELSE()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fopenmp -O3 -march=native -std=c++11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -O3 -march=native -std=c++11")
@@ -40,7 +40,7 @@ ENDIF()
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
-find_package(OpenCV 3.1 REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(Pangolin REQUIRED)
 
 # ==============================================================================

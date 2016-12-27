@@ -284,7 +284,8 @@ struct inplace_transpose_selector<MatrixType,false> { // non square matrix
   * Notice however that this method is only useful if you want to replace a matrix by its own transpose.
   * If you just need the transpose of a matrix, use transpose().
   *
-  * \note if the matrix is not square, then \c *this must be a resizable matrix.
+  * \note if the matrix is not square, then \c *this must be a resizable matrix. 
+  * This excludes (non-square) fixed-size matrices, block-expressions and maps.
   *
   * \sa transpose(), adjoint(), adjointInPlace() */
 template<typename Derived>
@@ -315,6 +316,7 @@ inline void DenseBase<Derived>::transposeInPlace()
   * If you just need the adjoint of a matrix, use adjoint().
   *
   * \note if the matrix is not square, then \c *this must be a resizable matrix.
+  * This excludes (non-square) fixed-size matrices, block-expressions and maps.
   *
   * \sa transpose(), adjoint(), transposeInPlace() */
 template<typename Derived>
@@ -329,11 +331,11 @@ inline void MatrixBase<Derived>::adjointInPlace()
 
 namespace internal {
 
-template<typename BinOp,typename NestedXpr,typename Rhs>
-struct blas_traits<SelfCwiseBinaryOp<BinOp,NestedXpr,Rhs> >
- : blas_traits<NestedXpr>
+template<typename BinOp,typename Xpr,typename Rhs>
+struct blas_traits<SelfCwiseBinaryOp<BinOp,Xpr,Rhs> >
+ : blas_traits<typename internal::remove_all<typename Xpr::Nested>::type>
 {
-  typedef SelfCwiseBinaryOp<BinOp,NestedXpr,Rhs> XprType;
+  typedef SelfCwiseBinaryOp<BinOp,Xpr,Rhs> XprType;
   static inline const XprType extract(const XprType& x) { return x; }
 };
 
@@ -390,7 +392,6 @@ struct checkTransposeAliasing_impl
                       ::run(extract_data(dst), other))
           && "aliasing detected during transposition, use transposeInPlace() "
              "or evaluate the rhs into a temporary using .eval()");
-
     }
 };
 

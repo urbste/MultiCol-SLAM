@@ -507,11 +507,24 @@ struct floor_log2<n, lower, upper, floor_log2_bogus>
 template<typename Scalar>
 struct random_default_impl<Scalar, false, true>
 {
-  typedef typename NumTraits<Scalar>::NonInteger NonInteger;
-
   static inline Scalar run(const Scalar& x, const Scalar& y)
   {
-    return x + Scalar((NonInteger(y)-x+1) * std::rand() / (RAND_MAX + NonInteger(1)));
+    typedef typename conditional<NumTraits<Scalar>::IsSigned,std::ptrdiff_t,std::size_t>::type ScalarX;
+    if(y<x)
+      return x;
+    // the following difference might overflow on a 32 bits system,
+    // but since y>=x the result converted to an unsigned long is still correct.
+    std::size_t range = ScalarX(y)-ScalarX(x);
+    std::size_t offset = 0;
+    // rejection sampling
+    std::size_t divisor = 1;
+    std::size_t multiplier = 1;
+    if(range<RAND_MAX) divisor = (std::size_t(RAND_MAX)+1)/(range+1);
+    else               multiplier = 1 + range/(std::size_t(RAND_MAX)+1);
+    do {
+      offset = (std::size_t(std::rand()) * multiplier) / divisor;
+    } while (offset > range);
+    return Scalar(ScalarX(x) + offset);
   }
 
   static inline Scalar run()

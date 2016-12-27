@@ -63,7 +63,7 @@
 // Currently, let's include it only on unix systems:
 #if defined(__unix__) || defined(__unix)
   #include <unistd.h>
-  #if ((defined __QNXNTO__) || (defined _GNU_SOURCE) || ((defined _XOPEN_SOURCE) && (_XOPEN_SOURCE >= 600))) && (defined _POSIX_ADVISORY_INFO) && (_POSIX_ADVISORY_INFO > 0)
+  #if ((defined __QNXNTO__) || (defined _GNU_SOURCE) || (defined __PGI) || ((defined _XOPEN_SOURCE) && (_XOPEN_SOURCE >= 600))) && (defined _POSIX_ADVISORY_INFO) && (_POSIX_ADVISORY_INFO > 0)
     #define EIGEN_HAS_POSIX_MEMALIGN 1
   #endif
 #endif
@@ -272,12 +272,12 @@ inline void* aligned_realloc(void *ptr, size_t new_size, size_t old_size)
   // The defined(_mm_free) is just here to verify that this MSVC version
   // implements _mm_malloc/_mm_free based on the corresponding _aligned_
   // functions. This may not always be the case and we just try to be safe.
-  #if defined(_MSC_VER) && defined(_mm_free)
+  #if defined(_MSC_VER) && (!defined(_WIN32_WCE)) && defined(_mm_free)
     result = _aligned_realloc(ptr,new_size,16);
   #else
     result = generic_aligned_realloc(ptr,new_size,old_size);
   #endif
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) && (!defined(_WIN32_WCE))
   result = _aligned_realloc(ptr,new_size,16);
 #else
   result = handmade_aligned_realloc(ptr,new_size,old_size);
@@ -417,6 +417,8 @@ template<typename T, bool Align> inline T* conditional_aligned_realloc_new(T* pt
 
 template<typename T, bool Align> inline T* conditional_aligned_new_auto(size_t size)
 {
+  if(size==0)
+    return 0; // short-cut. Also fixes Bug 884
   check_size_for_overflow<T>(size);
   T *result = reinterpret_cast<T*>(conditional_aligned_malloc<Align>(sizeof(T)*size));
   if(NumTraits<T>::RequireInitialization)
@@ -464,9 +466,8 @@ template<typename T, bool Align> inline void conditional_aligned_delete_auto(T *
 template<typename Scalar, typename Index>
 static inline Index first_aligned(const Scalar* array, Index size)
 {
-  enum { PacketSize = packet_traits<Scalar>::size,
-         PacketAlignedMask = PacketSize-1
-  };
+  static const Index PacketSize = packet_traits<Scalar>::size;
+  static const Index PacketAlignedMask = PacketSize-1;
 
   if(PacketSize==1)
   {
@@ -506,14 +507,18 @@ template<typename T> void smart_copy(const T* start, const T* end, T* target)
 
 template<typename T> struct smart_copy_helper<T,true> {
   static inline void run(const T* start, const T* end, T* target)
-  { memcpy(target, start, std::ptrdiff_t(end)-std::ptrdiff_t(start)); }
+  {
+    std::ptrdiff_t size = std::ptrdiff_t(end)-std::ptrdiff_t(start);
+    if(size==0) return;
+    eigen_internal_assert(start!=0 && end!=0 && target!=0);
+    memcpy(target, start, size);
+  }
 };
 
 template<typename T> struct smart_copy_helper<T,false> {
   static inline void run(const T* start, const T* end, T* target)
   { std::copy(start, end, target); }
 };
-
 
 /*****************************************************************************
 *** Implementation of runtime stack allocation (falling back to malloc)    ***
@@ -522,7 +527,7 @@ template<typename T> struct smart_copy_helper<T,false> {
 // you can overwrite Eigen's default behavior regarding alloca by defining EIGEN_ALLOCA
 // to the appropriate stack allocation function
 #ifndef EIGEN_ALLOCA
-  #if (defined __linux__)
+  #if (defined __linux__) || (defined __APPLE__) || (defined alloca)
     #define EIGEN_ALLOCA alloca
   #elif defined(_MSC_VER)
     #define EIGEN_ALLOCA _alloca
@@ -578,7 +583,7 @@ template<typename T> class aligned_stack_memory_handler
   */
 #ifdef EIGEN_ALLOCA
 
-  #ifdef __arm__
+  #if defined(__arm__) || defined(_WIN32)
     #define EIGEN_ALIGNED_ALLOCA(SIZE) reinterpret_cast<void*>((reinterpret_cast<size_t>(EIGEN_ALLOCA(SIZE+16)) & ~(size_t(15))) + 16)
   #else
     #define EIGEN_ALIGNED_ALLOCA EIGEN_ALLOCA
@@ -612,7 +617,6 @@ template<typename T> class aligned_stack_memory_handler
       void* operator new(size_t size, const std::nothrow_t&) throw() { \
         try { return Eigen::internal::conditional_aligned_malloc<NeedsToAlign>(size); } \
         catch (...) { return 0; } \
-        return 0; \
       }
   #else
     #define EIGEN_MAKE_ALIGNED_OPERATOR_NEW_NOTHROW(NeedsToAlign) \
@@ -630,11 +634,15 @@ template<typename T> class aligned_stack_memory_handler
       } \
       void operator delete(void * ptr) throw() { Eigen::internal::conditional_aligned_free<NeedsToAlign>(ptr); } \
       void operator delete[](void * ptr) throw() { Eigen::internal::conditional_aligned_free<NeedsToAlign>(ptr); } \
+      void operator delete(void * ptr, std::size_t /* sz */) throw() { Eigen::internal::conditional_aligned_free<NeedsToAlign>(ptr); } \
+      void operator delete[](void * ptr, std::size_t /* sz */) throw() { Eigen::internal::conditional_aligned_free<NeedsToAlign>(ptr); } \
       /* in-place new and delete. since (at least afaik) there is no actual   */ \
       /* memory allocated we can safely let the default implementation handle */ \
       /* this particular case. */ \
       static void *operator new(size_t size, void *ptr) { return ::operator new(size,ptr); } \
+      static void *operator new[](size_t size, void* ptr) { return ::operator new[](size,ptr); } \
       void operator delete(void * memory, void *ptr) throw() { return ::operator delete(memory,ptr); } \
+      void operator delete[](void * memory, void *ptr) throw() { return ::operator delete[](memory,ptr); } \
       /* nothrow-new (returns zero instead of std::bad_alloc) */ \
       EIGEN_MAKE_ALIGNED_OPERATOR_NEW_NOTHROW(NeedsToAlign) \
       void operator delete(void *ptr, const std::nothrow_t&) throw() { \
@@ -651,108 +659,60 @@ template<typename T> class aligned_stack_memory_handler
 
 /****************************************************************************/
 
+
 /** \class aligned_allocator
-* \ingroup Core_Module
-*
-* \brief STL compatible allocator to use with with 16 byte aligned types
-*
-* Example:
-* \code
-* // Matrix4f requires 16 bytes alignment:
-* std::map< int, Matrix4f, std::less<int>, 
-*           aligned_allocator<std::pair<const int, Matrix4f> > > my_map_mat4;
-* // Vector3f does not require 16 bytes alignment, no need to use Eigen's allocator:
-* std::map< int, Vector3f > my_map_vec3;
-* \endcode
-*
-* \sa \ref TopicStlContainers.
-*/
+  * \ingroup Core_Module
+  *
+  * \brief STL compatible allocator to use with with 16 byte aligned types
+  *
+  * Example:
+  * \code
+  * // Matrix4f requires 16 bytes alignment:
+  * std::map< int, Matrix4f, std::less<int>,
+  *           aligned_allocator<std::pair<const int, Matrix4f> > > my_map_mat4;
+  * // Vector3f does not require 16 bytes alignment, no need to use Eigen's allocator:
+  * std::map< int, Vector3f > my_map_vec3;
+  * \endcode
+  *
+  * \sa \blank \ref TopicStlContainers.
+  */
 template<class T>
-class aligned_allocator
+class aligned_allocator : public std::allocator<T>
 {
 public:
-    typedef size_t    size_type;
-    typedef std::ptrdiff_t difference_type;
-    typedef T*        pointer;
-    typedef const T*  const_pointer;
-    typedef T&        reference;
-    typedef const T&  const_reference;
-    typedef T         value_type;
+  typedef size_t          size_type;
+  typedef std::ptrdiff_t  difference_type;
+  typedef T*              pointer;
+  typedef const T*        const_pointer;
+  typedef T&              reference;
+  typedef const T&        const_reference;
+  typedef T               value_type;
 
-    template<class U>
-    struct rebind
-    {
-        typedef aligned_allocator<U> other;
-    };
+  template<class U>
+  struct rebind
+  {
+    typedef aligned_allocator<U> other;
+  };
 
-    pointer address( reference value ) const
-    {
-        return &value;
-    }
+  aligned_allocator() : std::allocator<T>() {}
 
-    const_pointer address( const_reference value ) const
-    {
-        return &value;
-    }
+  aligned_allocator(const aligned_allocator& other) : std::allocator<T>(other) {}
 
-    aligned_allocator()
-    {
-    }
+  template<class U>
+  aligned_allocator(const aligned_allocator<U>& other) : std::allocator<T>(other) {}
 
-    aligned_allocator( const aligned_allocator& )
-    {
-    }
+  ~aligned_allocator() {}
 
-    template<class U>
-    aligned_allocator( const aligned_allocator<U>& )
-    {
-    }
+  pointer allocate(size_type num, const void* /*hint*/ = 0)
+  {
+    internal::check_size_for_overflow<T>(num);
+    return static_cast<pointer>( internal::aligned_malloc(num * sizeof(T)) );
+  }
 
-    ~aligned_allocator()
-    {
-    }
-
-    size_type max_size() const
-    {
-        return (std::numeric_limits<size_type>::max)();
-    }
-
-    pointer allocate( size_type num, const void* hint = 0 )
-    {
-        EIGEN_UNUSED_VARIABLE(hint);
-        internal::check_size_for_overflow<T>(num);
-        return static_cast<pointer>( internal::aligned_malloc( num * sizeof(T) ) );
-    }
-
-    void construct( pointer p, const T& value )
-    {
-        ::new( p ) T( value );
-    }
-
-    // Support for c++11
-#if (__cplusplus >= 201103L)
-    template<typename... Args>
-    void  construct(pointer p, Args&&... args)
-    {
-      ::new(p) T(std::forward<Args>(args)...);
-    }
-#endif
-
-    void destroy( pointer p )
-    {
-        p->~T();
-    }
-
-    void deallocate( pointer p, size_type /*num*/ )
-    {
-        internal::aligned_free( p );
-    }
-
-    bool operator!=(const aligned_allocator<T>& ) const
-    { return false; }
-
-    bool operator==(const aligned_allocator<T>& ) const
-    { return true; }
+  void deallocate(pointer p, size_type /*num*/)
+  {
+    internal::aligned_free(p);
+  }
 };
 
 //---------- Cache sizes ----------
@@ -784,9 +744,9 @@ namespace internal {
 
 #ifdef EIGEN_CPUID
 
-inline bool cpuid_is_vendor(int abcd[4], const char* vendor)
+inline bool cpuid_is_vendor(int abcd[4], const int vendor[3])
 {
-  return abcd[1]==(reinterpret_cast<const int*>(vendor))[0] && abcd[3]==(reinterpret_cast<const int*>(vendor))[1] && abcd[2]==(reinterpret_cast<const int*>(vendor))[2];
+  return abcd[1]==vendor[0] && abcd[3]==vendor[1] && abcd[2]==vendor[2];
 }
 
 inline void queryCacheSizes_intel_direct(int& l1, int& l2, int& l3)
@@ -928,13 +888,16 @@ inline void queryCacheSizes(int& l1, int& l2, int& l3)
 {
   #ifdef EIGEN_CPUID
   int abcd[4];
+  const int GenuineIntel[] = {0x756e6547, 0x49656e69, 0x6c65746e};
+  const int AuthenticAMD[] = {0x68747541, 0x69746e65, 0x444d4163};
+  const int AMDisbetter_[] = {0x69444d41, 0x74656273, 0x21726574}; // "AMDisbetter!"
 
   // identify the CPU vendor
   EIGEN_CPUID(abcd,0x0,0);
   int max_std_funcs = abcd[1];
-  if(cpuid_is_vendor(abcd,"GenuineIntel"))
+  if(cpuid_is_vendor(abcd,GenuineIntel))
     queryCacheSizes_intel(l1,l2,l3,max_std_funcs);
-  else if(cpuid_is_vendor(abcd,"AuthenticAMD") || cpuid_is_vendor(abcd,"AMDisbetter!"))
+  else if(cpuid_is_vendor(abcd,AuthenticAMD) || cpuid_is_vendor(abcd,AMDisbetter_))
     queryCacheSizes_amd(l1,l2,l3);
   else
     // by default let's use Intel's API

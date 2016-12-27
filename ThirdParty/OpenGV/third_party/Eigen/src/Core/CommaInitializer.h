@@ -43,6 +43,17 @@ struct CommaInitializer
     m_xpr.block(0, 0, other.rows(), other.cols()) = other;
   }
 
+  /* Copy/Move constructor which transfers ownership. This is crucial in 
+   * absence of return value optimization to avoid assertions during destruction. */
+  // FIXME in C++11 mode this could be replaced by a proper RValue constructor
+  inline CommaInitializer(const CommaInitializer& o)
+  : m_xpr(o.m_xpr), m_row(o.m_row), m_col(o.m_col), m_currentBlockRows(o.m_currentBlockRows) {
+    // Mark original object as finished. In absence of R-value references we need to const_cast:
+    const_cast<CommaInitializer&>(o).m_row = m_xpr.rows();
+    const_cast<CommaInitializer&>(o).m_col = m_xpr.cols();
+    const_cast<CommaInitializer&>(o).m_currentBlockRows = 0;
+  }
+
   /* inserts a scalar value in the target matrix */
   CommaInitializer& operator,(const Scalar& s)
   {
@@ -65,9 +76,7 @@ struct CommaInitializer
   template<typename OtherDerived>
   CommaInitializer& operator,(const DenseBase<OtherDerived>& other)
   {
-    if(other.cols()==0 || other.rows()==0)
-      return *this;
-    if (m_col==m_xpr.cols())
+    if (m_col==m_xpr.cols() && (other.cols()!=0 || other.rows()!=m_currentBlockRows))
     {
       m_row+=m_currentBlockRows;
       m_col = 0;
@@ -75,24 +84,18 @@ struct CommaInitializer
       eigen_assert(m_row+m_currentBlockRows<=m_xpr.rows()
         && "Too many rows passed to comma initializer (operator<<)");
     }
-    eigen_assert(m_col<m_xpr.cols()
+    eigen_assert((m_col + other.cols() <= m_xpr.cols())
       && "Too many coefficients passed to comma initializer (operator<<)");
     eigen_assert(m_currentBlockRows==other.rows());
-    if (OtherDerived::SizeAtCompileTime != Dynamic)
-      m_xpr.template block<OtherDerived::RowsAtCompileTime != Dynamic ? OtherDerived::RowsAtCompileTime : 1,
-                              OtherDerived::ColsAtCompileTime != Dynamic ? OtherDerived::ColsAtCompileTime : 1>
-                    (m_row, m_col) = other;
-    else
-      m_xpr.block(m_row, m_col, other.rows(), other.cols()) = other;
+    m_xpr.template block<OtherDerived::RowsAtCompileTime, OtherDerived::ColsAtCompileTime>
+                    (m_row, m_col, other.rows(), other.cols()) = other;
     m_col += other.cols();
     return *this;
   }
 
   inline ~CommaInitializer()
   {
-    eigen_assert((m_row+m_currentBlockRows) == m_xpr.rows()
-         && m_col == m_xpr.cols()
-         && "Too few coefficients passed to comma initializer (operator<<)");
+      finished();
   }
 
   /** \returns the built matrix once all its coefficients have been set.
@@ -102,7 +105,12 @@ struct CommaInitializer
     * quaternion.fromRotationMatrix((Matrix3f() << axis0, axis1, axis2).finished());
     * \endcode
     */
-  inline XprType& finished() { return m_xpr; }
+  inline XprType& finished() {
+      eigen_assert(((m_row+m_currentBlockRows) == m_xpr.rows() || m_xpr.cols() == 0)
+           && m_col == m_xpr.cols()
+           && "Too few coefficients passed to comma initializer (operator<<)");
+      return m_xpr;
+  }
 
   XprType& m_xpr;   // target expression
   Index m_row;              // current row id
