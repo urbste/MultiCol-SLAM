@@ -29,6 +29,8 @@
 
 #include <Eigen/StdVector>
 
+#include <unordered_map>
+
 #include "misc.h"
 #include "cam_model_omni.h"
 #include "cam_system_omni.h"
