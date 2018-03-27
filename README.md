@@ -254,5 +254,6 @@ In our example, we could run MultiCol-SLAM:
 
     ./Examples/Lafida/multi_col_slam_lafida ./Examples/small_orb_omni_voc_9_6.yml  ./Examples/Lafida/Slam_Settings_indoor1.yaml ./Examples/Lafida/ $HOME$/Downloads/IndoorDynamic
 
+Important: To evaluate the trajectory you will need to transform the result into the rigid body coordinate system. The transformation matrix **MCS_to_Rigid_body** can be found [here](http://www2.ipf.kit.edu/~pcv2016/downloads/calibration.zip).
 
 
