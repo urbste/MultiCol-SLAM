@@ -21,7 +21,7 @@
 /*
 * MultiCol-SLAM is based on ORB-SLAM2 which was also released under GPLv3
 * For more information see <https://github.com/raulmur/ORB_SLAM2>
-* Raúl Mur-Artal <raulmur at unizar dot es> (University of Zaragoza)
+* Raï¿½l Mur-Artal <raulmur at unizar dot es> (University of Zaragoza)
 */
 
 #include "cMultiFrame.h"
@@ -155,24 +155,7 @@ namespace MultiColSLAM
 				static_cast<double>(mnMaxX[c] - mnMinX[c]);
 			mfGridElementHeightInv[c] = static_cast<double>(FRAME_GRID_ROWS) /
 				static_cast<double>(mnMaxY[c] - mnMinY[c]);
-			//Scale Levels Info
-			mnScaleLevels = mp_mdBRIEF_extractorOct[c]->GetLevels();
-			mfScaleFactor = mp_mdBRIEF_extractorOct[c]->GetScaleFactor();
 
-			mvScaleFactors.resize(mnScaleLevels);
-			mvLevelSigma2.resize(mnScaleLevels);
-			mvScaleFactors[0] = 1.0;
-			mvLevelSigma2[0] = 1.0;
-
-			for (int i = 1; i < mnScaleLevels; ++i)
-			{
-				mvScaleFactors[i] = mvScaleFactors[i - 1] * mfScaleFactor;
-				mvLevelSigma2[i] = mvScaleFactors[i] * mvScaleFactors[i];
-			}
-
-			mvInvLevelSigma2.resize(mvLevelSigma2.size());
-			for (int i = 0; i < mnScaleLevels; ++i)
-				mvInvLevelSigma2[i] = 1 / mvLevelSigma2[i];
 
 			// Assign Features to Grid Cells
 			mGrids[c] = std::vector<std::vector<std::vector<size_t> > >(FRAME_GRID_COLS);
@@ -205,6 +188,25 @@ namespace MultiColSLAM
 		mvpMapPoints = std::vector<cMapPoint*>(totalN, static_cast<cMapPoint*>(NULL));
 		// next id
 		mnId = nNextId++;
+
+					//Scale Levels Info
+		mnScaleLevels = mp_mdBRIEF_extractorOct[0]->GetLevels();
+		mfScaleFactor = mp_mdBRIEF_extractorOct[0]->GetScaleFactor();
+
+		mvScaleFactors.resize(mnScaleLevels);
+		mvLevelSigma2.resize(mnScaleLevels);
+		mvScaleFactors[0] = 1.0;
+		mvLevelSigma2[0] = 1.0;
+
+		for (int i = 1; i < mnScaleLevels; ++i)
+		{
+			mvScaleFactors[i] = mvScaleFactors[i - 1] * mfScaleFactor;
+			mvLevelSigma2[i] = mvScaleFactors[i] * mvScaleFactors[i];
+		}
+
+		mvInvLevelSigma2.resize(mvLevelSigma2.size());
+		for (int i = 0; i < mnScaleLevels; ++i)
+			mvInvLevelSigma2[i] = 1 / mvLevelSigma2[i];
 
 		this->masksLearned = extractor[0]->GetMasksLearned();
 		this->descDimension = extractor[0]->GetDescriptorSize();
@@ -307,7 +309,7 @@ namespace MultiColSLAM
 		{
 			for (int iy = nMinCellY; iy <= nMaxCellY; ++iy)
 			{
-				std::vector<size_t> vCell = mGrids[cam][ix][iy];
+				const std::vector<size_t>& vCell = mGrids[cam][ix][iy];
 				if (vCell.empty())
 					continue;
 

@@ -718,10 +718,10 @@ namespace MultiColSLAM
 		nMaxCellY = std::min(mnGridRows[cam] - 1, nMaxCellY);
 		if (nMaxCellY < 0)
 			return vIndices;
-
+		
 		for (int ix = nMinCellX; ix <= nMaxCellX; ix++)
 		{
-			std::vector<std::vector<size_t>> vCell = mGrids[cam][ix];
+			const std::vector<std::vector<size_t>>& vCell = mGrids[cam][ix];
 			for (int iy = nMinCellY; iy <= nMaxCellY; iy++)
 			{
 				for (size_t j = 0, jend = vCell[iy].size(); j < jend; j++)
